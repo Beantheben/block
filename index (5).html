@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Block">
+<meta name="theme-color" content="#101A19">
+<title>Block</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23101A19'/%3E%3Cpath d='M30 140 L90 40 L150 140 Z' fill='none' stroke='%23E8C547' stroke-width='12' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#101A19; --panel:#172422; --panel2:#1E2F2C; --line:#2C3B38;
+    --text:#E8EFEC; --muted:#7C918C; --dim:#556965;
+    --mark:#E8C547; --ok:#6FBF8F; --cool:#5AA9C4; --warn:#E2624A;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --disp:'Helvetica Neue','Arial Narrow',Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:var(--disp);-webkit-text-size-adjust:100%}
+  body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+  #app{max-width:480px;margin:0 auto;padding:24px 16px 96px}
+  button{font-family:inherit;color:inherit;border:none;background:none;cursor:pointer}
+  input{font-family:var(--mono);font-size:15px}
+  .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--mark)}
+  h1{font-size:30px;text-transform:uppercase;line-height:1;margin:2px 0 20px;font-weight:700}
+  .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim)}
+  nav{display:flex;gap:4px;background:var(--panel);border-radius:10px;padding:4px;margin-bottom:20px}
+  nav button{flex:1;border-radius:7px;padding:9px 2px;font-size:10px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+  nav button.on{background:var(--mark);color:var(--bg)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+  .card.flush{padding:14px}
+  .big{background:var(--mark);color:var(--bg);border-radius:18px;padding:20px;
+    width:100%;text-align:left;margin-bottom:14px;display:block}
+  .big .t{font-size:30px;font-weight:700;text-transform:uppercase;line-height:1;margin-top:4px}
+  .big .s{font-family:var(--mono);font-size:13px;opacity:.75;margin-top:8px}
+  .big .chip{background:rgba(16,26,25,.15);border-radius:8px;padding:8px 12px;
+    font-family:var(--mono);font-size:13px;font-weight:700;margin-top:12px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+  .grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:12px;text-align:left}
+  .tile .n{font-size:14px;font-weight:700}
+  .tile .a{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px}
+  .row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    padding:7px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:none}
+  .row .n{font-size:14px}
+  .row .v{font-family:var(--mono);font-size:11px;color:var(--muted);flex-shrink:0}
+  .sec{font-size:11px;text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px;font-weight:700}
+  .note{font-size:12px;line-height:1.45;color:var(--muted)}
+  .note b{color:var(--text)}
+  .why{margin-bottom:12px}
+  .why:last-child{margin-bottom:0}
+  .why .t{font-size:14px;font-weight:700;line-height:1.3}
+  .why .d{font-size:12px;line-height:1.45;color:var(--muted);margin-top:2px}
+  .numpad button{background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+    padding:16px 0;font-family:var(--mono);font-size:20px;font-weight:700}
+  .numpad button.on{background:var(--mark);border-color:var(--mark);color:var(--bg)}
+  .toggle{width:100%;text-align:left;border:1px solid var(--line);border-radius:12px;
+    padding:12px;font-size:14px;color:var(--muted);margin-bottom:14px;background:transparent}
+  .toggle.on{background:var(--panel2);border-color:var(--mark);color:var(--mark)}
+  .backbtn{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:11px 2px;text-align:center}
+  .backbtn .v{font-family:var(--mono);font-size:18px;font-weight:700}
+  .backbtn .l{font-size:10px;line-height:1.15;opacity:.8;margin-top:1px}
+  .primary{width:100%;background:var(--mark);color:var(--bg);border-radius:12px;
+    padding:15px;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+  .ghost{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--muted);
+    border-radius:12px;padding:12px;font-size:11px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.1em;margin-top:14px}
+  .day{border-radius:9px;padding:7px 0;text-align:center;border:1px solid transparent}
+  .day .d{font-family:var(--mono);font-size:11px;opacity:.8}
+  .day .p{font-size:11px;font-weight:700;line-height:1.1}
+  .sheetbg{position:fixed;inset:0;background:rgba(8,14,13,.72);z-index:50;display:flex;align-items:flex-end}
+  .sheet{width:100%;max-height:92vh;overflow-y:auto;background:var(--panel);
+    border-top:1px solid var(--line);border-radius:24px 24px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
+  .sheet h2{font-size:24px;text-transform:uppercase;line-height:1;margin:0;font-weight:700}
+  .inp{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+    padding:12px;color:var(--text);outline:none;margin-bottom:14px}
+  textarea.inp{font-family:var(--mono);font-size:12px;min-height:120px;resize:vertical}
+  .entry{display:flex;justify-content:space-between;align-items:center;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:11px 14px;margin-bottom:8px}
+  .entry .t{font-size:14px;font-weight:700}
+  .entry .m{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:2px}
+  .x{font-size:20px;color:var(--dim);padding:0 6px}
+  .bars{display:flex;align-items:flex-end;gap:5px;height:70px}
+  .bars div{flex:1;background:var(--mark);border-radius:3px 3px 0 0}
+  .statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+  .stat .v{font-family:var(--mono);font-size:20px;font-weight:700}
+  .stat .l{font-size:10px;text-transform:uppercase;color:var(--dim);margin-top:2px}
+  .chipbar{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
+  .chipbar button{flex-shrink:0;background:var(--panel);border:1px solid var(--line);
+    border-radius:9px;padding:9px 12px;font-size:12px;font-weight:700;color:var(--muted)}
+  .stepper{display:flex;gap:8px}
+  .stepper button{width:40px;height:40px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:9px;font-size:18px;font-weight:700}
+  .patrow{display:flex;justify-content:space-between;align-items:center;width:100%;
+    background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+    padding:11px 12px;margin-bottom:5px}
+  .testrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .testrow .meta{flex:1}
+  .testrow .meta .n{font-size:14px}
+  .testrow .meta .f{font-family:var(--mono);font-size:11px;color:var(--dim)}
+  .testrow input{width:92px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:9px;padding:9px;color:var(--text);outline:none}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="sheet"></div>
+<script>
+"use strict";
+
+/* ============================================================ constants */
+const TYPES = {
+  pyramid:{label:"Pyramid",short:"P",sub:"backyard \u00b7 30\u201345 min",color:"#E8C547",back:false},
+  dayB:{label:"Legs & carries",short:"B",sub:"gym \u00b7 45\u201360 min",color:"#5AA9C4",back:true},
+  dayC:{label:"Push & core",short:"C",sub:"backyard \u00b7 35\u201345 min",color:"#6FBF8F",back:false},
+  swim:{label:"Swim",short:"S",sub:"pool",color:"#8E7CC3",back:false},
+  run:{label:"Run",short:"R",sub:"Runna",color:"#D89A3C",back:true},
+  primer:{label:"Primer only",short:"\u2022",sub:"10\u201312 min \u00b7 anywhere",color:"#4FD1C5",back:true}
+};
+const CYCLE = [null,"pyramid","dayB","dayC","swim","run"];
+
+const PLAN = {
+  pyramid:{heading:"Up, double top set, back down",blocks:[
+    {t:"Warm-up",i:[["Band pull-aparts","2 x 20"],["Scap pull-ups","2 x 10, slow"],["Slow push-ups","x 10"]]},
+    {t:"The rungs \u2014 n = rung number",i:[["Pull-ups","n"],["Push-ups","3n"],["Dips","n"]]},
+    {t:"Finisher",i:[["Hollow hold","3 to failure"],["Dead bug","3 x 10 / side"]]},
+    {t:"Pull-up finisher \u2014 optional",i:[["EMOM 10 x 5","50 reps in 10 min"],["Or 5 x 8, 90s rest","40 reps, less dense"],["Or 3 x max, 2 min rest","use when testing"],["Finish: one all-out set","log the number"]]}],
+    notes:[["The descent is not the easy half","Coming down through 5 and 4 you've already done the ascent plus the double top set. Watch push-up depth there."],
+      ["Cap elbow bend at ~90\u00b0 on dips","Depth is what hurts shoulders here, not reps."],
+      ["Time it every session","Same top in less time is progress, and you'll see that before the top number moves."],
+      ["Short on time?","Skip the double top set and come straight down. Don't abandon the descent."],
+      ["Why the finisher is capped at 50","Top 6 already gives you 42 pull-ups. EMOM 10x5 puts the day at 92. Progress by adding a rep per minute (5 to 6 to 7), not by adding sets. The limiter is elbow tendon, and you are stacking it with dips and swimming in the same week."],
+      ["Skip it entirely when detrained","If the descent already feels heavy, the pyramid is the whole session. Add the finisher once top 6 stops feeling like a full workout."]]},
+  dayB:{heading:"80\u201390 min \u00b7 the one day that is not burnout",blocks:[
+    {t:"1 \u00b7 Warm-up (10 min, green loop band)",i:[["Bike or row, easy","5 min"],["Banded lateral walks","2 x 15 / direction"],["Banded monster walks","2 x 15 steps"],["Banded glute bridge","2 x 15 \u00b7 2s pause"],["Bodyweight good morning","2 x 10"],["Bodyweight split squat","2 x 10 / leg"],["Leg swings, both planes","10 / side"]]},
+    {t:"2 \u00b7 Supported squat pattern (20 min)",i:[["Hack squat","4 x 8"],["Leg press","4 x 12"]]},
+    {t:"3 \u00b7 Hinge (15 min)",i:[["Trap bar deadlift","4 x 5, +10lb/wk"],["Romanian deadlift","3 x 8, moderate"]]},
+    {t:"4 \u00b7 Unilateral (15 min)",i:[["Bulgarian split squat","4 x 10 / leg"],["Walking lunges, DBs","3 x 12 / leg"]]},
+    {t:"5 \u00b7 Isolation (14 min)",i:[["Single-leg extension","3 x 12 / leg"],["Lying leg curl","4 x 12"],["Standing calf raise","4 x 15"],["Seated calf raise","3 x 20"]]},
+    {t:"6 \u00b7 Carries \u2014 priority (10 min)",i:[["Suitcase carry","4 x 40yd / side"],["Farmer carry","3 x 40yd"]]},
+    {t:"7 \u00b7 Pull gap + press + flush (14 min)",i:[["One-arm DB row","4 x 10"],["DB overhead press","4 x 8"],["Bike, easy","10 min"]]}],
+    notes:[["Overhead press lives here now","You have no dumbbells at home, and Push \u0026 core is a backyard session \u2014 that is exactly why it gets done. Loaded pressing belongs on the day you are already at the gym. Handstand progression covers overhead at home."],
+      ["Green loop band, not the heavy red","Glute activation should feel like the muscle switching on, not like a set. The heavy band recruits everything else to compensate, which is the opposite of the point."],
+      ["Good mornings are there for the hinge","Your warm-up had no hinge pattern in it while section 3 loads a trap bar. Two sets of bodyweight good mornings covers that gap. Add an empty-bar RDL if the trap bar feels heavy on set one."],
+      ["Supported beats free-standing, for you","Hack squat and leg press brace your torso against a pad, so the spine is not loaded axially and your erectors are not the limiting structure. Barbell back squat put the load on your spine \u2014 same quads, completely different demand on the part that hurts. Treat this as a rule, not a coincidence."],
+      ["Leg press: stop before your hips curl","The one failure mode on this machine. The bottom of the range is where the lumbar spine rounds under load. Cut it short of that point every set."],
+      ["Log weight, not reps","Progression is added load. Nothing on this day goes to failure \u2014 barbell hinge to failure is how backs get hurt."],
+      ["Carries are the point of the day","Anti-lateral-flexion under load \u2014 the same lever as your pre-run core session. They stay even when everything else gets cut."],
+      ["Single-leg extension earns its slot","Unilateral isolation shows you a side-to-side gap that bilateral work hides. If one leg trails the other by more than a couple reps at the same load, that asymmetry is worth knowing about before mileage climbs."],
+      ["Cutting for time?","Drop section 5 first, then section 4. Never the carries or the hinge."],
+      ["Reactive back that day","Skip trap bar and RDLs entirely. Hack squat, leg press, and machines are all still fine \u2014 that is the whole point of the supported pattern."],
+      ["Space this away from long runs","Seven sections of leg volume plus rising mileage will interfere. Put at least a day between this and your longest run."]]},
+
+  dayC:{heading:"Every set to failure unless noted",blocks:[
+    {t:"0 \u00b7 Warm-up (5\u20136 min, light tubes only)",i:[["Band pull-aparts","2 x 20"],["Shoulder dislocates, wide","10, slow"],["External rotations","2 x 15 / side"],["Face pulls, anchor at head height","2 x 15"],["Scap pull-ups","2 x 10"],["Ramp-up dips","5 normal, then 3 tempo"]]},
+    {t:"Push \u2014 dips go first, while fresh",i:[["Tempo dips, 3s down","2 @ 65% + 1 to failure"],["Tempo push-ups, 3s down","2 @ 65% + 1 to failure"],["Pike push-ups","1 @ 65% + 1 to failure"],["Inverted rows","2 @ 65% + 1 to failure"]]},
+    {t:"Posterior chain",i:[["Nordic regression / sliders","2 @ 65% + 1 to failure"]]},
+    {t:"65% lookup \u2014 from your last failure set",i:[["Last set was 6","do 4"],["8","5"],["10","7"],["12","8"],["15","10"],["20","13"],["25","16"],["First time? Use 3 RIR","stop with 3 clean reps left"]]},
+    {t:"Overhead \u2014 handstand progression (12 min)",i:[["Wrist prep first","30s each: flexion, extension, circles"],["Wall walk-up to handstand hold","3 x 20\u201345s, chest to wall"],["Chest-to-wall HSPU negative","3 x 3, 5s down"],["Half-kneeling band press","3 x 10 / side"],["Band pull-apart between sets","15"]]},
+    {t:"Handstand ladder \u2014 move up one stage at a time",i:[["1. Pike push-up, floor","clear 12 clean"],["2. Pike push-up, feet on paver","clear 10 clean"],["3. Wall walk-up + hold","reach 45s stacked"],["4. Negatives, 5s down","3 x 3 controlled"],["5. Partial-range HSPU","head to 2in above floor"],["6. Full chest-to-wall HSPU","the goal"]]},
+    {t:"Core \u2014 burnout",i:[["Hollow hold","3 to failure"],["Copenhagen plank","2 / side, to failure"],["Side plank","2 / side, to failure"],["Bird dog","3 x 10 / side \u2014 quality"],["Sit-ups, 2-min PST","1 set"]]}],
+    notes:[["Working sets at 65%, final set to failure","65% of whatever your last failure set on that movement was. About a 6.5 out of 10 \u2014 hard enough to accumulate volume, far enough from failure that you are not spending tendon on it. The lookup block above saves you the math."],
+      ["The number updates itself","Log the failure set each week and next week\u0027s working sets rise with it. You never have to guess or re-test \u2014 the last set is the test."],
+      ["Only ONE set per movement goes to failure","This session used to carry 13 upper-body failure sets \u2014 nearly the whole week\u0027s budget in one day. Four is the number now. Same movements, same order, far less tendon cost."],
+      ["Face the wall. Do not back into it.","Back-to-wall handstands put you in a banana arch with the lumbar spine extended under load \u2014 the exact position your erectors already over-recruit. Chest-to-wall forces a stacked, neutral line. Harder, honest, and the right variant for your back."],
+      ["Do not skip the hold stage","Pressing before you can hold 45s stacked means grinding reps in a broken position, which is how wrists and shoulders get hurt. The hold is the strength work; the press comes after."],
+      ["Wrist prep is not optional here","Handstand work loads the wrists harder than anything else you do. Thirty seconds each of flexion, extension and circles before you go upside down."],
+      ["Overhead pressing is the BUD/S gap","Log PT and boat carries are overhead-dominant. Half-kneeling band press stays because it loads the press and anti-lateral-flexion at once \u2014 the same quality your carries train. Loaded DB pressing moved to Legs & carries, where the dumbbells are."],
+      ["Never take a cold joint into a 3-second eccentric","The ramp-up dips are the part of the warm-up that matters most. Five at normal speed, three at tempo, then your first working set. Skipping straight to failure on a cold shoulder is the single most avoidable injury in this plan."],
+      ["Use the yellow or red tubes, not the heavy ones","Warm-up work should never feel heavy. The point is getting the rear delts and rotator cuff online, not fatiguing them before you press."],
+      ["Tempo failure = losing the 3-count","Not when the rep stops. The instant you start dropping through the bottom half instead of lowering it, the set is over. Grinding out extra reps at normal speed defeats the whole point."],
+      ["Why tempo dips and not more volume","The pyramid already gives you 42 to 72 submaximal dips. This is the opposite quality: low reps, high tension, slow eccentric. That is what builds dip strength and what remodels the tendon you are loading twice a week."],
+      ["Depth: stop at about 90 degrees of elbow bend","Depth is what injures shoulders on dips, not reps. Going deeper under a 3-second eccentric compounds it. Shallow and controlled beats deep and fast."],
+      ["If elbows or front-of-shoulder complain","Cut these before you cut the pyramid rungs. This is the addition; the pyramid is the session you will actually keep doing."],
+      ["Nordics: stop the instant form breaks","Hamstrings tear when you chase one extra rep."],
+      ["Sit-ups appear here and nowhere else","One PST-format slot a week."],
+      ["48h clear of the pyramid","Both are shoulder-heavy."],
+      ["Hollow holds belong here, not in the primer","Failure work drives adaptation, which is what this day is for. The primer is acute activation \u2014 fatiguing the stabilizers there would defeat its whole purpose. Same movement, opposite intent."]]},
+  primer:{heading:"The activation block on its own \u2014 no run attached",blocks:[
+    {t:"The block (10\u201312 min, no rest between)",i:[["Glute bridge","15 \u00b7 2s pause"],["Dead bug","8 / side, slow"],["Side plank","30s / side"],["Bird dog","8 / side"],["Pallof press","8 / side"]]},
+    {t:"Optional hip work",i:[["90/90 hip switch","8 / side"],["Couch stretch","45s / side"]]}],
+    notes:[["This is the intervention that actually works","Three years of heat, ice, massage, e-stim, chiro and hamstring stretching produced nothing lasting. Pre-session trunk activation reliably clears symptoms. It earns its own slot even on days you do nothing else."],
+      ["Nothing here goes to failure","This block works by making the stabilizers available, not by fatiguing them. Burning them out before a session leaves them less able to do the job \u2014 that is the opposite of the effect you want. Hollow holds and other burnout work live on Push \u0026 core and the pyramid finisher."],
+      ["Use it on stiff mornings and rest days","Ten minutes, no equipment, no shower needed. The lowest-friction thing in the whole plan, which is exactly why it should be the one you never skip."],
+      ["Do it BEFORE hard sessions, not after","Acute effect is what you are after. On a run day this is your warm-up, not a separate session \u2014 only log it as a primer day when it stands alone."],
+      ["It feeds the McGill retest","Side plank, bird dog and the hollow position are three of the four qualities the battery scores. Frequency here should show up as a number in six weeks."]]},
+  swim:{heading:"Largest gap, lowest injury risk",blocks:[
+    {t:"Masters (90 min)",i:[["Weeks 1\u20132 back","sit out last 1\u20132 reps of hard sets"],["Fins on anything fast","no paddles, no pull buoy"],["Once adapted","full sets"]]},
+    {t:"Solo CST session (25\u201330 min)",i:[["Warm-up free","300\u2013400 yd easy"],["CST drill","8 x 50, long rest, form only"],["CST continuous","4 x 100 moderate"],["Cool down","200 easy"]]}],
+    notes:[["Masters is a freestyle club","Combat sidestroke gets zero attention there and it's the stroke you're tested on."],
+      ["Add session 2 as solo CST","Not a second masters. Two 90-min hard sessions a week is the wrong second step."],
+      ["Session 3 can be a second masters","Once twice a week feels routine."],
+      ["Shoulder pain at rest or on rep 1","Cut the pyramid top by 1 and pull dips from the rungs."]]}
+};
+
+const WARM = {
+  easy:{label:"Easy",color:"#6BD98F",sub:"Easy + long easy runs \u00b7 conversational",
+    heading:"The whole point is low, gradual load",
+    act:[["Glute bridge","15 \u00b7 2s pause"],["Dead bug","8 / side, slow"],["Side plank","25s / side"],["Bird dog","8 / side"]],
+    dyn:[["Leg swings, front-back","10 / side"],["Leg swings, lateral","10 / side"],["High knees","20 steps"]],
+    build:["Walk 2 min \u2192 easy jog 2 min \u2192 settle in.","No abrupt start. Keep it 8:30+/mi."],
+    note:"Lowest-risk day. The activation block is the part with real evidence behind it."},
+  tempo:{label:"Tempo / Fartlek",color:"#FF9F43",sub:"Any session with fast reps or surges",
+    heading:"Highest-risk format for your back",
+    act:[["Glute bridge","15 \u00b7 2s pause"],["Dead bug","8 / side, slow"],["Side plank","25s / side"],["Bird dog","8 / side"],["Pallof press","8 / side"]],
+    dyn:[["Leg swings, both planes","10 / side"],["Walking lunges","6 / side"],["A-skips","20 steps"],["4\u20136 strides","build to rep pace"]],
+    build:["12\u201315 min graded build into first rep.","Ease into pace \u2014 never a cold switch."],
+    note:"If your back is active: convert on/off reps to continuous tempo at the same average pace. Abrupt REPEATED transitions are the trigger.",warn:true},
+  long:{label:"Long Run",color:"#B18CFF",sub:"Steady long runs at easy effort",
+    heading:"Duration is the stressor, not pace",
+    act:[["Glute bridge","15 \u00b7 2s pause"],["Dead bug","8 / side, slow"],["Side plank","30s / side"],["Bird dog","10 / side"]],
+    dyn:[["Leg swings, front-back","10 / side"],["Leg swings, lateral","10 / side"],["Walking lunges","6 / side"]],
+    build:["Walk 2 min \u2192 jog 3 min \u2192 settle in.","First mile slowest. Let pace come to you."],
+    note:"Extra side-plank and bird-dog volume here: erector endurance is what fades late in long efforts. Hand-check at mile 2\u20133."},
+  tt:{label:"TT / Progression",color:"#FF6B6B",sub:"Time trials + progressive long runs",
+    heading:"Hard, but single gradual onset",
+    act:[["Glute bridge","15 \u00b7 2s pause"],["Dead bug","8 / side, slow"],["Side plank","25s / side"],["Bird dog","8 / side"],["Pallof press","8 / side"]],
+    dyn:[["Leg swings, both planes","10 / side"],["Walking lunges","6 / side"],["A-skips","20 steps"],["4\u20136 strides","build to goal pace"]],
+    build:["Runna's 0.75mi jog + your primer first.","Then ramp effort in \u2014 don't spike it."],
+    note:"A TT is a data point: sustained hard pace, ONE onset. If it doesn't flare, that confirms repeated transitions \u2014 not speed \u2014 are the trigger."}
+};
+
+const PST=[["push","Push-ups","2 min"],["sit","Sit-ups","2 min"],["pull","Pull-ups","dead hang"],["cst","500yd CST","mm:ss"]];
+const MCG=[["flex","Flexor \u2014 seated 60\u00b0","sec"],["ext","Extensor \u2014 Biering-S\u00f8rensen","sec"],["sideR","Side bridge R","sec"],["sideL","Side bridge L","sec"]];
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+/* ================================================================ state */
+const KEY="block-v6";
+const DELOAD_EVERY=4;
+const DEF={log:[],tests:[],targets:{pyramid:1,dayB:1,dayC:1,swim:1,run:3,primer:2}};
+let S=JSON.parse(JSON.stringify(DEF));
+let view="today", planKey="pyramid", warmKey="easy", logTab="stats";
+let editTargets=false, draft=null, sheet=null, picker=null;
+
+function load(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(raw){
+      const d=JSON.parse(raw);
+      if(d.pattern&&!d.targets){          // migrate v6 schedule -> weekly targets
+        const t={pyramid:0,dayB:0,dayC:0,swim:0,run:0};
+        Object.keys(d.pattern).forEach(function(k){ if(d.pattern[k]) t[d.pattern[k]]++; });
+        if(d.swimTarget) t.swim=d.swimTarget;
+        Object.keys(t).forEach(function(k){ if(!t[k]&&k!=="run") t[k]=1; });
+        d.targets=t; delete d.pattern; delete d.swimTarget;
+      }
+      S=Object.assign(JSON.parse(JSON.stringify(DEF)),d);
+      S.targets=Object.assign({},DEF.targets,S.targets||{});
+    }
+  }catch(e){}
+}
+function save(){
+  try{ localStorage.setItem(KEY,JSON.stringify(S)); }
+  catch(e){ alert("Couldn't save. If you're in a Private tab, storage is blocked \u2014 open this normally."); }
+}
+
+/* ================================================================ utils */
+const DAY_MS=86400000;
+const pad=n=>String(n).padStart(2,"0");
+const keyOf=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+function todayKey(){return keyOf(new Date());}
+function daysAgo(k){
+  const p=k.split("-");
+  const then=new Date(+p[0],+p[1]-1,+p[2]);
+  const now=new Date(); now.setHours(0,0,0,0);
+  return Math.round((now-then)/DAY_MS);
+}
+function fmtAgo(d){return d===0?"today":d===1?"yesterday":d+" days ago";}
+const rungSum=t=>t*(t+1);
+function sequence(t){const a=[];for(let i=1;i<=t;i++)a.push(i);for(let i=t;i>=1;i--)a.push(i);return a;}
+function pyrTotals(t){const n=rungSum(t);return{n:n,pull:n,push:3*n,dip:n,total:5*n};}
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+const lastOf=t=>S.log.find(e=>e.type===t);
+const since=t=>{const e=lastOf(t);return e?daysAgo(e.dateKey):null;};
+const doneOn=(dk,t)=>S.log.find(e=>e.dateKey===dk&&e.type===t);
+function weekIndex(){
+  const first=S.log.length?S.log[S.log.length-1].dateKey:todayKey();
+  return Math.floor((daysAgo(first)-daysAgo(todayKey()))/7);
+}
+function isDeloadWeek(){return S.log.length>=6&&((weekIndex()+1)%DELOAD_EVERY===0);}
+function thisWeek(t){return S.log.filter(e=>e.type===t&&daysAgo(e.dateKey)<7).length;}
+function sessionsOn(dk){return S.log.filter(e=>e.dateKey===dk);}
+function suggestedTop(){
+  const p=S.log.filter(e=>e.type==="pyramid");
+  if(!p.length) return 6;
+  const twice=p[1]&&p[1].top===p[0].top;
+  return (!p[0].partial&&twice)?Math.min(10,p[0].top+1):p[0].top;
+}
+function swimBumpReady(){
+  if(S.targets.swim>=3) return false;
+  const prev=S.log.filter(e=>e.type==="swim"&&daysAgo(e.dateKey)>=7&&daysAgo(e.dateKey)<14).length;
+  return thisWeek("swim")>=S.targets.swim&&prev>=S.targets.swim;
+}
+function recommend(){
+  const sP=since("pyramid"), sC=since("dayC"), blocked={};
+  if(sP!==null&&sP<2) blocked.dayC="Pyramid "+fmtAgo(sP)+". Both are shoulder-heavy \u2014 give it 48h.";
+  if(sC!==null&&sC<2) blocked.pyramid="Push & core "+fmtAgo(sC)+". Both are shoulder-heavy \u2014 give it 48h.";
+  const tk=todayKey();
+  const cand=Object.keys(TYPES).filter(function(t){
+    return S.targets[t]>0 && !blocked[t] && !doneOn(tk,t) && thisWeek(t)<S.targets[t];
+  }).map(function(t){
+    return {t:t, gap:S.targets[t]-thisWeek(t), d:since(t)===null?99:since(t)};
+  }).sort(function(a,b){ return b.gap-a.gap || b.d-a.d; });
+  if(!cand.length) return {type:null,blocked:blocked};
+  const c=cand[0];
+  return {type:c.t, days:c.d, blocked:blocked,
+    reason:thisWeek(c.t)+"/"+S.targets[c.t]+" this week"};
+}
+
+/* =============================================================== render */
+function render(){
+  const titles={today:"Today",plan:"The Plan",warm:"Warm-ups",month:MONTHS[new Date().getMonth()],log:"Data"};
+  let h='<div class="kicker">Training</div><h1>'+titles[view]+'</h1><nav>';
+  [["today","Today"],["plan","Plan"],["warm","Warm-up"],["month","Month"],["log","Data"]].forEach(function(p){
+    h+='<button class="'+(view===p[0]?"on":"")+'" onclick="go(\''+p[0]+'\')">'+p[1]+'</button>';
+  });
+  h+='</nav>';
+  h+= view==="today"?vToday(): view==="plan"?vPlan(): view==="warm"?vWarm(): view==="month"?vMonth(): vLog();
+  document.getElementById("app").innerHTML=h;
+  document.getElementById("sheet").innerHTML=sheet?vSheet():(picker?vPicker():"");
+}
+function go(v){view=v;editTargets=false;picker=null;render();}
+
+/* ---------------------------------------------------------------- today */
+function vToday(){
+  const tk=todayKey(), rec=recommend();
+  let h="";
+  if(isDeloadWeek()){
+    h+='<div class="card" style="border-color:var(--mark)">'+
+       '<div class="sec" style="color:var(--mark)">Deload week</div>'+
+       '<div class="note">Keep every session, cut the intensity. Pyramid drops one rung. '+
+       'Day B loads down 20%. Day C skips the failure sets entirely \u2014 stop two reps short on everything. '+
+       'Swim and primer stay as they are.</div>'+
+       '<div class="note" style="margin-top:8px">Tendon complaints show up in week 3 to 5 of steady progression. '+
+       'This is the week that prevents that, not a week off.</div></div>';
+  }
+
+  if(rec.type){
+    h+='<button class="big" onclick="openSheet(\''+rec.type+'\',\''+tk+'\')">'+
+       '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;opacity:.7">Suggestion \u00b7 '+rec.reason+'</div>'+
+       '<div class="t">'+TYPES[rec.type].label+'</div>'+
+       '<div class="s">'+(rec.days===99?"never logged":"last done "+fmtAgo(rec.days))+' \u00b7 '+TYPES[rec.type].sub+'</div>'+
+       (rec.type==="pyramid"?'<div class="chip">suggested top '+suggestedTop()+' \u2192 '+pyrTotals(suggestedTop()).total+' reps</div>':'')+
+       '</button>';
+  }else{
+    h+='<div class="card"><div style="font-size:18px;font-weight:700;text-transform:uppercase">Week\u2019s covered</div>'+
+       '<div class="note" style="margin-top:4px">You\u2019ve hit every target. Anything else this week is a bonus, not a requirement.</div></div>';
+  }
+
+  // rolling 7-day progress — not a calendar, not a streak
+  h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">'+
+     '<span class="sec" style="color:var(--mark);margin:0">Last 7 days</span>'+
+     '<button onclick="toggleTargets()" style="font-size:11px;color:var(--dim);font-family:var(--mono)">'+
+     (editTargets?"done":"edit targets")+'</button></div>';
+  Object.keys(TYPES).forEach(function(t){
+    const done=thisWeek(t), tgt=S.targets[t];
+    if(!tgt&&!done&&!editTargets) return;
+    const pct=tgt?Math.min(100,done/tgt*100):(done?100:0);
+    h+='<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:baseline">'+
+       '<span style="font-size:13px;font-weight:700;color:'+TYPES[t].color+'">'+TYPES[t].label+'</span>'+
+       (editTargets
+         ? '<span class="stepper"><button onclick="bumpTarget(\''+t+'\',-1)" style="width:32px;height:32px;font-size:16px">\u2212</button>'+
+           '<span style="font-family:var(--mono);font-size:15px;font-weight:700;width:26px;text-align:center;line-height:32px">'+tgt+'</span>'+
+           '<button onclick="bumpTarget(\''+t+'\',1)" style="width:32px;height:32px;font-size:16px">+</button></span>'
+         : '<span style="font-family:var(--mono);font-size:13px;color:var(--muted)">'+done+(tgt?"/"+tgt:"")+'</span>')+
+       '</div>'+
+       '<div style="height:5px;background:var(--panel2);border-radius:3px;margin-top:5px;overflow:hidden">'+
+       '<div style="height:100%;width:'+pct+'%;background:'+TYPES[t].color+';border-radius:3px"></div></div></div>';
+  });
+  h+='<div class="note" style="margin-top:2px">Rolling seven days, not a calendar week \u2014 a slow week never starts you from zero.</div></div>';
+
+  if(swimBumpReady()){
+    h+='<div class="card" style="border-color:var(--mark)"><div class="note" style="color:var(--mark)">'+
+       'You\u2019ve hit '+S.targets.swim+' swims twice running. Ready for '+(S.targets.swim+1)+
+       ' \u2014 make the added one a solo CST session, not a second masters.</div></div>';
+  }
+
+  h+='<div class="lbl" style="margin-bottom:8px">Log a session</div><div class="grid2">';
+  Object.keys(TYPES).forEach(function(t){
+    const d=since(t), b=rec.blocked[t];
+    h+='<button class="tile" onclick="openSheet(\''+t+'\',\''+tk+'\')" style="border-color:'+(b?"var(--warn)":"var(--line)")+'">'+
+       '<div class="n" style="color:'+TYPES[t].color+'">'+TYPES[t].label+'</div>'+
+       '<div class="a" style="color:'+(d===null?"var(--dim)":d>10?"var(--warn)":"var(--muted)")+'">'+(d===null?"never":fmtAgo(d))+'</div>'+
+       (b?'<div style="font-size:11px;line-height:1.25;color:var(--warn);margin-top:4px">'+b+'</div>':'')+
+       '</button>';
+  });
+  h+='</div>';
+  h+='<div class="note" style="text-align:center;margin-top:18px">Nothing here is overdue. It only tracks what you\u2019ve done.</div>';
+  return h;
+}
+function toggleTargets(){editTargets=!editTargets;render();}
+function bumpTarget(t,n){S.targets[t]=Math.max(0,Math.min(7,(S.targets[t]||0)+n));save();render();}
+
+/* ----------------------------------------------------------------- plan */
+function vPlan(){
+  let h='<div class="chipbar">';
+  Object.keys(PLAN).forEach(function(k){
+    const on=k===planKey;
+    h+='<button onclick="setPlan(\''+k+'\')" style="'+(on?"background:"+TYPES[k].color+";border-color:"+TYPES[k].color+";color:var(--bg)":"")+'">'+TYPES[k].label+'</button>';
+  });
+  h+='</div>';
+  const P=PLAN[planKey];
+  h+='<div class="card"><div class="sec" style="color:'+TYPES[planKey].color+'">'+TYPES[planKey].sub+'</div>'+
+     '<div style="font-size:16px;font-weight:700;line-height:1.3">'+P.heading+'</div></div>';
+
+  if(planKey==="pyramid"){
+    h+='<div class="card" style="background:var(--panel2)"><div class="lbl" style="margin-bottom:8px">Rep totals by top</div>'+
+       '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;text-align:center;font-family:var(--mono);font-size:12px">'+
+       ["Top","Pull","Push","Dip","All"].map(x=>'<span style="color:var(--dim)">'+x+'</span>').join("");
+    [6,7,8,9,10].forEach(function(t){
+      const p=pyrTotals(t);
+      h+='<span style="color:var(--mark);font-weight:700">'+t+'</span><span>'+p.pull+'</span><span>'+p.push+'</span><span>'+p.dip+'</span><span style="font-weight:700">'+p.total+'</span>';
+    });
+    h+='</div></div>';
+  }
+  if(planKey==="swim"){
+    h+='<div class="card" style="background:var(--panel2)"><div class="lbl">Current target</div>'+
+       '<div style="font-size:14px;line-height:1.4;margin-top:4px"><b style="color:'+TYPES.swim.color+';font-family:var(--mono)">'+S.targets.swim+'x / week</b>'+
+       (S.targets.swim===1?" \u2014 masters only. Build the habit before adding volume."
+        :S.targets.swim===2?" \u2014 masters + one solo CST session."
+        :" \u2014 two masters + solo CST.")+'</div></div>';
+  }
+
+  P.blocks.forEach(function(b){
+    h+='<div class="card"><div class="sec" style="color:'+TYPES[planKey].color+'">'+b.t+'</div>';
+    b.i.forEach(function(r){h+='<div class="row"><span class="n">'+r[0]+'</span><span class="v">'+r[1]+'</span></div>';});
+    h+='</div>';
+  });
+  h+='<div class="card"><div class="sec" style="color:var(--mark)">Why it\'s built this way</div>';
+  P.notes.forEach(function(n){h+='<div class="why"><div class="t">'+n[0]+'</div><div class="d">'+n[1]+'</div></div>';});
+  return h+'</div>';
+}
+function setPlan(k){planKey=k;render();}
+
+/* -------------------------------------------------------------- warm-up */
+function vWarm(){
+  let h='<div class="grid2" style="margin-bottom:14px">';
+  Object.keys(WARM).forEach(function(k){
+    const w=WARM[k], on=k===warmKey;
+    h+='<button class="tile" onclick="setWarm(\''+k+'\')" style="text-align:center;padding:14px 6px;'+
+       (on?"background:"+w.color+";border-color:"+w.color+";color:var(--bg)":"")+'">'+
+       '<div style="font-size:14px;font-weight:700">'+w.label+'</div></button>';
+  });
+  h+='</div>';
+  const w=WARM[warmKey];
+  h+='<div class="card" style="border-left:4px solid '+w.color+'">'+
+     '<div class="sec" style="color:'+w.color+'">'+w.sub+'</div>'+
+     '<div style="font-size:16px;font-weight:700;line-height:1.3">'+w.heading+'</div></div>';
+  [["Activation \u2014 no rest between",w.act],["Dynamic",w.dyn]].forEach(function(s){
+    h+='<div class="card"><div class="sec" style="color:'+w.color+'">'+s[0]+'</div>';
+    s[1].forEach(function(r){h+='<div class="row"><span class="n">'+r[0]+'</span><span class="v">'+r[1]+'</span></div>';});
+    h+='</div>';
+  });
+  h+='<div class="card"><div class="sec" style="color:'+w.color+'">Build, don\'t launch</div>';
+  w.build.forEach(function(l){h+='<div style="font-size:14px;line-height:1.4">'+l+'</div>';});
+  h+='</div>';
+  h+='<div class="card" style="border-color:'+(w.warn?"var(--warn)":"var(--line)")+'">'+
+     '<div class="note" style="color:'+(w.warn?"var(--warn)":"var(--muted)")+';font-size:14px">'+w.note+'</div></div>';
+  h+='<div class="card" style="background:var(--panel2)"><div class="note">'+
+     'The activation block is deliberately the same four movements across all four cards \u2014 that\'s the remission protocol, the one lever with real evidence behind it. What changes is the dynamic work and the length of the build, scaled to how abrupt the session is.</div></div>';
+  return h;
+}
+function setWarm(k){warmKey=k;render();}
+
+/* ---------------------------------------------------------------- month */
+function vMonth(){
+  const now=new Date(), Y=now.getFullYear(), M=now.getMonth();
+  const first=new Date(Y,M,1).getDay(), days=new Date(Y,M+1,0).getDate(), tk=todayKey();
+  let total=0, active=0;
+  for(let d=1;d<=days;d++){
+    const n=sessionsOn(keyOf(new Date(Y,M,d))).length;
+    total+=n; if(n) active++;
+  }
+  let h='<div class="statgrid">'+
+    '<div class="stat"><div class="v">'+total+'</div><div class="l">Sessions</div></div>'+
+    '<div class="stat"><div class="v">'+active+'</div><div class="l">Active days</div></div>'+
+    '<div class="stat"><div class="v">'+(active?(total/active).toFixed(1):"\u2014")+'</div><div class="l">Per day</div></div>'+
+    '</div>';
+
+  h+='<div class="grid7" style="margin-bottom:4px;text-align:center">'+
+     ["S","M","T","W","T","F","S"].map(x=>'<span class="lbl">'+x+'</span>').join("")+'</div>';
+  h+='<div class="grid7" style="margin-bottom:14px">';
+  for(let i=0;i<first;i++) h+='<div></div>';
+  for(let d=1;d<=days;d++){
+    const dt=new Date(Y,M,d), dk=keyOf(dt), ses=sessionsOn(dk);
+    const isT=dk===tk, future=daysAgo(dk)<0;
+    const dots=ses.slice(0,3).map(e=>'<span style="width:5px;height:5px;border-radius:50%;background:'+TYPES[e.type].color+';display:inline-block"></span>').join(" ");
+    h+='<button class="day" '+(future?'disabled':'onclick="openPicker(\''+dk+'\')"')+
+       ' style="background:'+(ses.length?"var(--panel2)":"transparent")+
+       ';border-color:'+(isT?"var(--text)":(ses.length?"var(--line)":"transparent"))+
+       ';color:var(--'+(ses.length?"text":"dim")+');opacity:'+(future?.25:1)+'">'+
+       '<div class="d">'+d+'</div>'+
+       '<div style="height:7px;line-height:7px;margin-top:2px">'+(dots||'')+'</div></button>';
+  }
+  h+='</div>';
+
+  h+='<div class="card"><div class="note">Tap any past day to add or edit what you did. '+
+     'There are no missed days here \u2014 blank just means nothing was logged.</div></div>';
+
+  h+='<div class="card"><div class="sec" style="color:var(--mark)">Key</div>';
+  Object.keys(TYPES).forEach(function(t){
+    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+
+       '<span style="width:12px;height:12px;border-radius:3px;background:'+TYPES[t].color+'"></span>'+
+       '<span class="note">'+TYPES[t].label+'</span></div>';
+  });
+  return h+'</div>';
+}
+function openPicker(dk){picker=dk;render();}
+function closePicker(){picker=null;render();}
+function vPicker(){
+  const ses=sessionsOn(picker);
+  let h='<div class="sheetbg" onclick="closePicker()"><div class="sheet" onclick="event.stopPropagation()">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center">'+
+    '<h2>'+picker+'</h2><button onclick="closePicker()" style="font-family:var(--mono);font-size:13px;color:var(--dim)">close</button></div>'+
+    '<div class="note" style="margin:6px 0 16px">'+(ses.length?"Logged that day \u2014 tap to change, \u00d7 to remove.":"Nothing logged. Add what you did.")+'</div>';
+  ses.forEach(function(e){
+    h+='<div class="entry"><div><div class="t" style="color:'+TYPES[e.type].color+'">'+TYPES[e.type].label+
+       (e.type==="pyramid"?'<span style="font-family:var(--mono)"> \u00b7 top '+e.top+'</span>':'')+'</div>'+
+       (e.note?'<div class="m">'+esc(e.note)+'</div>':'')+'</div>'+
+       '<button class="x" onclick="delEntry('+e.id+')">\u00d7</button></div>';
+  });
+  h+='<div class="lbl" style="margin:16px 0 8px">Add to this day</div><div class="grid2">';
+  Object.keys(TYPES).forEach(function(t){
+    h+='<button class="tile" onclick="openSheet(\''+t+'\',\''+picker+'\')" style="text-align:center">'+
+       '<div class="n" style="color:'+TYPES[t].color+'">'+TYPES[t].label+'</div></button>';
+  });
+  return h+'</div><div style="height:12px"></div></div></div>';
+}
+
+/* ------------------------------------------------------------------ log */
+function vLog(){
+  let h='<div style="display:flex;gap:4px;background:var(--panel2);border-radius:10px;padding:4px;margin-bottom:14px">'+
+    [["stats","Stats"],["sessions","Log"],["tests","Tests"],["backup","Backup"]].map(p=>
+      '<button onclick="setLogTab(\''+p[0]+'\')" style="flex:1;border-radius:7px;padding:9px;font-size:11px;font-weight:700;text-transform:uppercase;'+
+      (logTab===p[0]?"background:var(--mark);color:var(--bg)":"color:var(--muted)")+'">'+p[1]+'</button>').join("")+'</div>';
+
+  if(logTab==="stats") return h+vStats();
+  if(logTab==="backup") return h+vBackup();
+  if(logTab==="tests") return h+vTests();
+
+  const pyr=S.log.filter(e=>e.type==="pyramid").slice(0,14).reverse();
+  const flares=S.log.filter(e=>e.back>=2);
+  h+='<div class="statgrid">'+
+     [["Sessions",S.log.length],["Best top",pyr.length?Math.max.apply(null,pyr.map(e=>e.top)):"\u2014"],["Back 2+",flares.length]]
+     .map(s=>'<div class="stat"><div class="v">'+s[1]+'</div><div class="l">'+s[0]+'</div></div>').join("")+'</div>';
+
+  if(pyr.length>1){
+    h+='<div class="card"><div class="sec" style="color:var(--mark)">Pyramid top over time</div><div class="bars">'+
+       pyr.map(e=>'<div style="height:'+(e.top/10*100)+'%;opacity:'+(e.partial?.45:.9)+'"></div>').join("")+
+       '</div><div class="note" style="font-family:var(--mono);margin-top:8px">'+pyr.map(e=>e.top).join(" \u00b7 ")+'</div></div>';
+  }
+  if(flares.length){
+    h+='<div class="card"><div class="sec" style="color:var(--warn)">What preceded a 2 or 3</div>'+
+       flares.slice(0,6).map(e=>'<div class="note" style="font-family:var(--mono)">'+e.dateKey+' \u00b7 '+TYPES[e.type].label+' \u00b7 back '+e.back+'</div>').join("")+
+       '<div class="note" style="margin-top:8px">Only runs and weighted work are scored, so this is a shortlist of actual suspects.</div></div>';
+  }
+  if(!S.log.length) h+='<div class="note" style="text-align:center;margin:32px 0">Nothing logged yet.</div>';
+
+  S.log.forEach(function(e){
+    h+='<div class="entry"><div>'+
+       '<div class="t" style="color:'+TYPES[e.type].color+'">'+TYPES[e.type].label+
+       (e.type==="pyramid"?'<span style="font-family:var(--mono)"> \u00b7 top '+e.top+'</span>':'')+'</div>'+
+       '<div class="m">'+e.dateKey+(e.mins?" \u00b7 "+e.mins+"m":"")+(e.back!=null?" \u00b7 back "+e.back:"")+(e.partial?" \u00b7 cut short":"")+(e.note?" \u00b7 "+esc(e.note):"")+'</div>'+
+       '</div><button class="x" onclick="delEntry('+e.id+')">\u00d7</button></div>';
+  });
+  return h;
+}
+function setLogTab(t){logTab=t;draft=null;render();}
+function delEntry(id){S.log=S.log.filter(e=>e.id!==id);save();render();}
+
+function vTests(){
+  let h="";
+  if(!draft) h+='<button class="primary" style="margin-bottom:14px" onclick="newRound()">New test round</button>';
+  if(draft){
+    h+='<div class="card" style="border-color:var(--mark)"><div class="note" style="font-family:var(--mono);margin-bottom:12px">'+draft.date+'</div>'+
+       '<div class="sec" style="color:var(--mark)">PST</div>';
+    PST.forEach(function(t){
+      h+='<div class="testrow"><div class="meta"><div class="n">'+t[1]+'</div><div class="f">'+t[2]+'</div></div>'+
+         '<input value="'+esc(draft.v[t[0]]||"")+'" oninput="setDraft(\''+t[0]+'\',this.value)"></div>';
+    });
+    h+='<div class="sec" style="color:var(--mark);margin-top:16px">McGill torso endurance</div>'+
+       '<div class="note" style="margin-bottom:8px">Light warm-up only. Four holds to failure, 5 min rest between. Retest every 6 weeks, same protocol.</div>';
+    MCG.forEach(function(t){
+      h+='<div class="testrow"><div class="meta"><div class="n">'+t[1]+'</div><div class="f">'+t[2]+'</div></div>'+
+         '<input value="'+esc(draft.v[t[0]]||"")+'" oninput="setDraft(\''+t[0]+'\',this.value)"></div>';
+    });
+    h+='<div style="display:flex;gap:8px;margin-top:16px">'+
+       '<button onclick="cancelRound()" style="flex:1;background:var(--panel2);color:var(--muted);border-radius:12px;padding:13px;font-size:11px;font-weight:700;text-transform:uppercase">Cancel</button>'+
+       '<button onclick="saveRound()" style="flex:1;background:var(--mark);color:var(--bg);border-radius:12px;padding:13px;font-size:11px;font-weight:700;text-transform:uppercase">Save round</button></div></div>';
+  }
+  if(!S.tests.length&&!draft)
+    h+='<div class="note" style="text-align:center;margin:32px 0;line-height:1.5">No rounds yet. Run a baseline before you need one \u2014<br>a retest without a baseline tells you nothing.</div>';
+
+  S.tests.forEach(function(r,i){
+    const prev=S.tests[i+1];
+    h+='<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
+       '<span style="font-family:var(--mono);font-size:14px;font-weight:700">'+r.date+'</span>'+
+       '<button class="x" onclick="delRound('+r.id+')">\u00d7</button></div>';
+    PST.concat(MCG).forEach(function(t){
+      if(!r.v[t[0]]) return;
+      const a=parseFloat(prev&&prev.v[t[0]]), b=parseFloat(r.v[t[0]]);
+      const d=(!isNaN(a)&&!isNaN(b))?(b-a):null;
+      h+='<div class="row"><span style="font-size:12px">'+t[1]+'</span>'+
+         '<span class="v">'+esc(r.v[t[0]])+(d!==null?' <span style="color:'+(d>0?"var(--ok)":"var(--muted)")+'">('+(d>0?"+":"")+d+')</span>':'')+'</span></div>';
+    });
+    h+='</div>';
+  });
+  return h;
+}
+function newRound(){draft={date:todayKey(),v:{}};render();}
+function setDraft(k,v){draft.v[k]=v;}
+function cancelRound(){draft=null;render();}
+function saveRound(){S.tests.unshift({id:Date.now(),date:draft.date,v:draft.v});draft=null;save();render();}
+function delRound(id){S.tests=S.tests.filter(r=>r.id!==id);save();render();}
+
+function backupText(){
+  return JSON.stringify({v:7,exported:todayKey(),log:S.log,tests:S.tests,targets:S.targets});
+}
+function importText(raw){
+  try{
+    const d=JSON.parse(String(raw).trim());
+    if(!d||!Array.isArray(d.log)) return false;
+    S=Object.assign(JSON.parse(JSON.stringify(DEF)),{
+      log:d.log,tests:d.tests||[],
+      targets:Object.assign({},DEF.targets,d.targets||{})});
+    save(); return true;
+  }catch(e){ return false; }
+}
+function inWindow(e,days){const d=daysAgo(e.dateKey);return d>=0&&d<days;}
+function avg(a){return a.length?a.reduce(function(x,y){return x+y},0)/a.length:null;}
+function hhmm(mins){const h=Math.floor(mins/60),m=Math.round(mins%60);return h?h+"h "+m+"m":m+"m";}
+
+function statsFor(t,days){
+  const all=S.log.filter(function(e){return e.type===t&&inWindow(e,days)});
+  const timed=all.filter(function(e){return e.mins>0});
+  const weeks=days/7;
+  return {
+    count:all.length,
+    expected:Math.round((S.targets[t]||0)*weeks),
+    timed:timed.length,
+    avgMin:avg(timed.map(function(e){return e.mins})),
+    totalMin:timed.reduce(function(x,e){return x+e.mins},0),
+    partials:all.filter(function(e){return e.partial}).length
+  };
+}
+
+function vStats(){
+  const W=28;
+  const rows=Object.keys(TYPES).filter(function(t){return S.targets[t]>0||S.log.some(function(e){return e.type===t})});
+  let doneAll=0,expAll=0,minAll=0,timedAll=0;
+  const data={};
+  rows.forEach(function(t){
+    const d=statsFor(t,W); data[t]=d;
+    doneAll+=d.count; expAll+=d.expected; minAll+=d.totalMin; timedAll+=d.timed;
+  });
+  const pct=expAll?Math.round(doneAll/expAll*100):null;
+  const pctColor=pct===null?"var(--dim)":pct>=90?"var(--ok)":pct>=70?"var(--mark)":"var(--warn)";
+
+  let h='<div class="card"><div class="sec" style="color:var(--mark)">Last 4 weeks</div>'+
+    '<div style="display:flex;align-items:baseline;gap:10px;margin:6px 0 2px">'+
+    '<span style="font-family:var(--mono);font-size:38px;font-weight:700;color:'+pctColor+'">'+
+    (pct===null?"\u2014":pct+"%")+'</span>'+
+    '<span class="note">'+doneAll+' of '+expAll+' target sessions</span></div>'+
+    '<div style="height:6px;background:var(--panel2);border-radius:3px;margin-top:8px;overflow:hidden">'+
+    '<div style="height:100%;width:'+Math.min(100,pct||0)+'%;background:'+pctColor+'"></div></div>'+
+    '<div class="note" style="margin-top:10px">Anything above 100% means you trained more than you targeted. '+
+    'Below 70% for two blocks running usually means the targets are wrong, not you \u2014 lower them on the Today tab.</div></div>';
+
+  // headline time numbers
+  h+='<div class="statgrid">'+
+    '<div class="stat"><div class="v">'+(minAll?hhmm(minAll):"\u2014")+'</div><div class="l">Total time</div></div>'+
+    '<div class="stat"><div class="v">'+(timedAll?Math.round(minAll/timedAll)+"m":"\u2014")+'</div><div class="l">Avg session</div></div>'+
+    '<div class="stat"><div class="v">'+(minAll?(minAll/60/4).toFixed(1)+"h":"\u2014")+'</div><div class="l">Hrs / week</div></div>'+
+    '</div>';
+
+  // per type
+  h+='<div class="card"><div class="sec" style="color:var(--mark)">By session type</div>';
+  rows.forEach(function(t){
+    const d=data[t];
+    const p=d.expected?Math.round(d.count/d.expected*100):null;
+    const col=p===null?"var(--dim)":p>=90?"var(--ok)":p>=70?"var(--mark)":"var(--warn)";
+    h+='<div style="margin-bottom:14px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline">'+
+      '<span style="font-size:14px;font-weight:700;color:'+TYPES[t].color+'">'+TYPES[t].label+'</span>'+
+      '<span style="font-family:var(--mono);font-size:13px;color:'+col+'">'+
+      (p===null?d.count+" done":p+"%")+'</span></div>'+
+      '<div style="height:5px;background:var(--panel2);border-radius:3px;margin-top:5px;overflow:hidden">'+
+      '<div style="height:100%;width:'+Math.min(100,p||0)+'%;background:'+TYPES[t].color+'"></div></div>'+
+      '<div class="note" style="margin-top:4px;font-family:var(--mono);font-size:11px">'+
+      d.count+'/'+d.expected+' sessions'+
+      (d.avgMin?' \u00b7 avg '+Math.round(d.avgMin)+'m':' \u00b7 no times logged')+
+      (d.totalMin?' \u00b7 '+hhmm(d.totalMin)+' total':'')+
+      (d.partials?' \u00b7 '+d.partials+' cut short':'')+
+      '</div></div>';
+  });
+  h+='</div>';
+
+  // weekly volume, last 8 weeks
+  const wk=[];
+  for(let i=7;i>=0;i--){
+    const c=S.log.filter(function(e){const d=daysAgo(e.dateKey);return d>=i*7&&d<(i+1)*7}).length;
+    wk.push(c);
+  }
+  const mx=Math.max.apply(null,wk.concat([1]));
+  h+='<div class="card"><div class="sec" style="color:var(--mark)">Sessions per week \u00b7 last 8</div>'+
+    '<div class="bars">'+wk.map(function(c){
+      return '<div style="height:'+Math.max(3,c/mx*100)+'%;background:'+(c?"var(--mark)":"var(--panel2)")+'"></div>';
+    }).join("")+'</div>'+
+    '<div class="note" style="font-family:var(--mono);margin-top:8px">'+wk.join(" \u00b7 ")+
+    '  <span style="color:var(--dim)">(oldest \u2192 now)</span></div></div>';
+
+  // pyramid detail
+  const pyr=S.log.filter(function(e){return e.type==="pyramid"});
+  if(pyr.length){
+    const tops=pyr.map(function(e){return e.top}),
+          timed=pyr.filter(function(e){return e.mins>0});
+    h+='<div class="card"><div class="sec" style="color:'+TYPES.pyramid.color+'">Pyramid</div>'+
+      '<div class="row"><span class="n">Sessions logged</span><span class="v">'+pyr.length+'</span></div>'+
+      '<div class="row"><span class="n">Best top</span><span class="v">'+Math.max.apply(null,tops)+'</span></div>'+
+      '<div class="row"><span class="n">Average top</span><span class="v">'+avg(tops).toFixed(1)+'</span></div>'+
+      '<div class="row"><span class="n">Total reps at top '+tops[0]+'</span><span class="v">'+pyrTotals(tops[0]).total+'</span></div>'+
+      (timed.length?'<div class="row"><span class="n">Average time</span><span class="v">'+Math.round(avg(timed.map(function(e){return e.mins})))+'m</span></div>':'')+
+      (timed.length>1?'<div class="note" style="margin-top:8px">Same top in less time is the more sensitive progress signal \u2014 it moves before the top number does.</div>':'')+
+      '</div>';
+  }
+
+  // back scores, only where tracked
+  const backed=S.log.filter(function(e){return e.back!=null});
+  if(backed.length){
+    const a=avg(backed.map(function(e){return e.back}));
+    h+='<div class="card"><div class="sec" style="color:var(--mark)">Back score</div>'+
+      '<div class="row"><span class="n">Sessions scored</span><span class="v">'+backed.length+'</span></div>'+
+      '<div class="row"><span class="n">Average</span><span class="v" style="color:'+(a<1?"var(--ok)":a<2?"var(--mark)":"var(--warn)")+'">'+a.toFixed(2)+'</span></div>'+
+      '<div class="row"><span class="n">2 or higher</span><span class="v">'+backed.filter(function(e){return e.back>=2}).length+'</span></div>'+
+      '<div class="note" style="margin-top:8px">Only runs and weighted work are scored, so this average is over suspects \u2014 not over everything you did.</div></div>';
+  }
+
+  if(!S.log.length) h+='<div class="note" style="text-align:center;margin:32px 0">Log a few sessions and the numbers show up here.</div>';
+  else if(!timedAll) h+='<div class="card" style="border-color:var(--mark)"><div class="note" style="color:var(--mark)">'+
+    'No durations logged yet. Enter your Garmin time when you log a session and the averages fill in.</div></div>';
+  return h;
+}
+
+function vBackup(){
+  const txt=backupText();
+  const runs=S.log.length, rounds=S.tests.length;
+  return '<div class="card"><div class="sec" style="color:var(--mark)">Your data</div>'+
+    '<div class="note">'+runs+' session'+(runs===1?'':'s')+' \u00b7 '+rounds+' test round'+(rounds===1?'':'s')+
+    ' \u00b7 '+Object.keys(S.targets).filter(function(k){return S.targets[k]}).length+' active targets</div>'+
+    '<div class="note" style="margin-top:8px">Everything lives in this phone\u2019s browser storage. '+
+    'iOS clears that if you go ~7 weeks without opening the app, and it does not follow you to a new phone. '+
+    'Copy the text below somewhere safe once a month.</div></div>'+
+
+    '<div class="card"><div class="sec" style="color:var(--mark)">Export</div>'+
+    '<textarea class="inp" id="expbox" readonly onclick="this.select()">'+esc(txt)+'</textarea>'+
+    '<button class="primary" onclick="copyBackup()">Copy backup</button>'+
+    '<div class="note" style="margin-top:10px">Tap the box to select all if the button doesn\u2019t work. '+
+    'Paste it into Notes \u2014 that\u2019s the whole backup.</div></div>'+
+
+    '<div class="card"><div class="sec" style="color:var(--mark)">Import</div>'+
+    '<div class="note" style="margin-bottom:10px">Paste a backup to restore. This <b>replaces</b> everything '+
+    'currently in the app \u2014 export first if you have anything you want to keep.</div>'+
+    '<textarea class="inp" id="impbox" placeholder="paste backup here"></textarea>'+
+    '<button class="primary" onclick="runImport()">Restore from backup</button></div>'+
+
+    '<div class="card"><div class="sec" style="color:var(--warn)">Danger</div>'+
+    '<button class="ghost" style="margin-top:0;border-color:var(--warn);color:var(--warn)" '+
+    'onclick="wipe()">Erase everything</button></div>';
+}
+function copyBackup(){
+  const box=document.getElementById("expbox");
+  const txt=backupText();
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){alert("Backup copied. Paste it into Notes.");},
+      function(){box.select();document.execCommand("copy");alert("Backup copied.");});
+  }else{ box.select(); try{document.execCommand("copy");alert("Backup copied.");}catch(e){alert("Select the text and copy manually.");} }
+}
+function runImport(){
+  const v=document.getElementById("impbox").value;
+  if(!v.trim()){alert("Nothing pasted.");return;}
+  if(importText(v)){ render(); alert("Restored."); }
+  else alert("That didn\u2019t parse. Paste the full text from Export \u2014 it should start with {\"v\":6.");
+}
+function wipe(){
+  if(!confirm("Erase all sessions and test rounds? Export first if you want them back.")) return;
+  if(!confirm("Really erase? This cannot be undone.")) return;
+  S=JSON.parse(JSON.stringify(DEF)); save(); render();
+}
+
+/* ---------------------------------------------------------------- sheet */
+function openSheet(type,dateKey){
+  picker=null;
+  sheet={type:type,dateKey:dateKey,top:type==="pyramid"?suggestedTop():null,partial:false,back:null,note:"",mins:null};
+  render();
+}
+function closeSheet(){sheet=null;render();}
+function setTop(v){sheet.top=v;render();}
+function togglePartial(){sheet.partial=!sheet.partial;render();}
+function setBack(v){sheet.back=sheet.back===v?null:v;render();}
+function setNote(v){sheet.note=v;}
+function setMins(v){const n=parseInt(v,10);sheet.mins=(isNaN(n)||n<=0)?null:Math.min(600,n);render();}
+function saveSheet(){
+  if(daysAgo(sheet.dateKey)<0){ alert("That date hasn't happened yet."); return; }
+  S.log=S.log.filter(e=>!(e.dateKey===sheet.dateKey&&e.type===sheet.type));
+  S.log.push({id:Date.now(),type:sheet.type,dateKey:sheet.dateKey,
+    top:sheet.type==="pyramid"?sheet.top:undefined,partial:sheet.partial,back:sheet.back,note:sheet.note,mins:sheet.mins});
+  S.log.sort(function(a,b){ if(a.dateKey!==b.dateKey) return a.dateKey<b.dateKey?1:-1; return b.id-a.id; });
+  sheet=null;save();render();
+}
+function vSheet(){
+  const T=TYPES[sheet.type], isP=sheet.type==="pyramid";
+  let h='<div class="sheetbg" onclick="closeSheet()"><div class="sheet" onclick="event.stopPropagation()">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center">'+
+    '<h2 style="color:'+T.color+'">'+T.label+'</h2>'+
+    '<button onclick="closeSheet()" style="font-family:var(--mono);font-size:13px;color:var(--dim)">close</button></div>'+
+    '<div class="note" style="font-family:var(--mono);margin:4px 0 16px">'+sheet.dateKey+'</div>';
+
+  if(isP){
+    h+='<div class="lbl" style="margin-bottom:8px">What top did you reach?</div><div class="grid6 numpad" style="margin-bottom:12px">';
+    [5,6,7,8,9,10].forEach(function(v){
+      h+='<button class="'+(sheet.top===v?"on":"")+'" onclick="setTop('+v+')">'+v+'</button>';
+    });
+    h+='</div>';
+    const t=pyrTotals(sheet.top);
+    h+='<div class="card" style="background:var(--panel2);border:none">'+
+       '<div class="note" style="font-family:var(--mono);color:var(--dim)">'+sequence(sheet.top).join("-")+'</div>'+
+       '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-top:10px">'+
+       [["Pull",t.pull],["Push",t.push],["Dip",t.dip]].map(x=>
+         '<div><div style="font-family:var(--mono);font-size:18px;font-weight:700">'+x[1]+'</div><div class="lbl">'+x[0]+'</div></div>').join("")+
+       '</div><div class="note" style="text-align:center;font-family:var(--mono);margin-top:8px">'+t.total+' total reps</div></div>';
+  }
+
+  h+='<div class="lbl" style="margin-bottom:8px">Duration \u2014 from your watch</div>'+
+     '<div class="grid6 numpad" style="margin-bottom:8px">'+
+     [20,30,45,60,75,90].map(function(v){
+       return '<button class="'+(sheet.mins===v?"on":"")+'" style="font-size:15px;padding:13px 0" onclick="setMins('+v+')">'+v+'</button>';
+     }).join("")+'</div>'+
+     '<input class="inp" type="number" inputmode="numeric" placeholder="exact minutes (optional)" '+
+     'value="'+(sheet.mins||"")+'" oninput="setMins(this.value)">';
+
+  h+='<button class="toggle '+(sheet.partial?"on":"")+'" onclick="togglePartial()">'+
+     (sheet.partial?"\u2713 ":"")+'Cut it short / didn\'t finish</button>';
+
+  if(T.back){
+    h+='<div class="lbl" style="margin-bottom:8px">Back afterwards</div><div class="grid4" style="margin-bottom:8px">';
+    [[0,"clear","#6FBF8F"],[1,"clears w/ core","#E8C547"],[2,"all day","#D89A3C"],[3,"flare","#E2624A"]].forEach(function(b){
+      const on=sheet.back===b[0];
+      h+='<button class="backbtn" onclick="setBack('+b[0]+')" style="'+(on?"background:"+b[2]+";border-color:"+b[2]+";color:var(--bg)":"")+'">'+
+         '<div class="v">'+b[0]+'</div><div class="l">'+b[1]+'</div></button>';
+    });
+    h+='</div><div class="note" style="margin-bottom:14px">Only asked on runs and weighted work \u2014 the two things that have actually flared it.</div>';
+  }
+
+  h+='<input class="inp" placeholder="note (optional)" value="'+esc(sheet.note)+'" oninput="setNote(this.value)">'+
+     '<button class="primary" onclick="saveSheet()">'+(isP?"Log it":"Did the whole day")+'</button>'+
+     '<div style="height:12px"></div></div></div>';
+  return h;
+}
+
+/* debug accessor — lets you inspect state from Safari's console if needed */
+function _state(){return S;}
+
+/* ================================================================= boot */
+load();
+render();
+</script>
+</body>
+</html>
